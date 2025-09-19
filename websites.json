@@ -1,63 +1,11 @@
 [
   {
-    "name": "保定日报",
-    "url": "http://epaper.bdall.com/rbpaper/pc/layout/202509/18/node_01.html"
-  },
-  {
-    "name": "安阳日报",
-    "url": "https://www.ayrbs.com/szb/pc/column/202509/18/node_01.html"
-  },
-  {
-    "name": "安庆日报",
-    "url": "https://aqdzb.aqnews.com.cn/epaper/read.do?m=i&iid=12545&idate=1_2025-09-18"
-  },
-  {
     "name": "安庆晚报",
     "url": "https://aqdzb.aqnews.com.cn/epaper/read.do?m=i&iid=12546&idate=2_2025-09-18"
   },
   {
-    "name": "新安晚报",
-    "url": "http://epaper.ahwang.cn/xawb/20250918/html/index.htm"
-  },
-  {
-    "name": "安徽商报",
-    "url": "https://ahsbszb.ahnews.com.cn/pc/layout/202509/18/node_1.html"
-  },
-  {
-    "name": "安顺日报",
-    "url": "https://www.asrbs.net/site1/asrb/html/2025-09/18/node_2.htm"
-  },
-  {
-    "name": "澳门日报",
-    "url": "https://www.macaodaily.com/html/2025-09/18/node_2.htm"
-  },
-  {
     "name": "安康日报",
     "url": "https://sjk.akxw.cn/epaper/read.do?m=i&iid=3739&idate=1_2025-09-18"
-  },
-  {
-    "name": "北京晚报",
-    "url": "https://bjrbdzb.bjd.com.cn/bjwb/mobile/2025/20250918/20250918_m.html?v=1758191056726#page0"
-  },
-  {
-    "name": "北京日报",
-    "url": "https://bjrbdzb.bjd.com.cn/bjrb/mobile/2025/20250918/20250918_m.html?v=1758191083395#page0"
-  },
-  {
-    "name": "怀化日报",
-    "url": "http://paper.0745news.cn/bcwbpc/202509/18/l01.html"
-  },
-  {
-    "name": "沧州日报",
-    "url": "http://czrb.bohaitoday.com/pad/layout/202509/18/node_01.html"
-  },
-  {
-    "name": "昌都报",
-    "url": "http://sz.cdbao.cn/cdb/202509/12/node_01.html"
-  },
-  {
-    "name": "大兴安岭日报",
-    "url": "http://paper.dxalrb.org.cn/dxalrb/pad/layout/202509/18/node_A01.html"
   },
   {
     "name": "阜阳日报",
@@ -68,87 +16,7 @@
     "url": "https://test.fynews.net/epaper/read.do?m=i&iid=4262&idate=2_2025-09-17"
   },
   {
-    "name": "福州晚报",
-    "url": "https://mag.fznews.com.cn/fzwb/2025/20250918/20250918_A01/20250918_A01.html"
-  },
-  {
-    "name": "福建日报",
-    "url": "https://fjrb.fjdaily.com/pc/col/202509/18/node_01.html"
-  },
-  {
-    "name": "甘肃日报",
-    "url": "https://szb.gansudaily.com.cn/gsrb/pc/layout/202509/18/col01.html"
-  },
-  {
-    "name": "海宁日报",
-    "url": "https://hnrb.cnepaper.com/hnrb/html/2025-09/18/node_1.htm?v=1"
-  },
-  {
-    "name": "杭州日报",
-    "url": "https://hzdaily.hangzhou.com.cn/hzrb/2025/09/18/page_detail_1_20250918A01.html"
-  },
-  {
-    "name": "都市快报",
-    "url": "https://hzdaily.hangzhou.com.cn/dskb/2025/09/18/page_detail_2_20250918A01.html"
-  },
-  {
-    "name": "每日商报",
-    "url": "https://hzdaily.hangzhou.com.cn/mrsb/2025/09/18/page_detail_3_20250918A01.html"
-  },
-  {
-    "name": "城报",
-    "url": "https://hzdaily.hangzhou.com.cn/cb/2025/09/18/page_detail_4_20250918A01.html"
-  },
-  {
-    "name": "吉林日报",
-    "url": "http://jlrbszb.dajilin.com/pad/paper/layout/202509/18/node_01.html"
-  },
-  {
     "name": "井冈山报",
     "url": "http://szb.jgsdaily.com:9999/epaper/jgsb/html/2025/09/18/01/default.htm"
-  },
-  {
-    "name": "昆明日报",
-    "url": "http://daily.clzg.cn/html/2025-09/18/node_281.htm"
-  },
-  {
-    "name": "兰州晚报",
-    "url": "https://lzwb.lzbs.com.cn/202509/18/node_A01.html"
-  },
-  {
-    "name": "陇东报",
-    "url": "https://paper.qingyangwang.com.cn/pad/layout/202509/18/node_1.html"
-  },
-  {
-    "name": "兰州日报",
-    "url": "https://lzrb.lzbs.com.cn/202509/18/node_R01.html"
-  },
-  {
-    "name": "闽北日报",
-    "url": "https://mbrb.greatwuyi.com/column/202509/18/l1.html"
-  },
-  {
-    "name": "闽西日报",
-    "url": "http://www.mxrb.cn/dzb/mxrb/2025-09/18/node_01.html"
-  },
-  {
-    "name": "绵阳日报",
-    "url": "http://epaper.myrb.net/html/2025-07/21/node_2.htm"
-  },
-  {
-    "name": "南充日报",
-    "url": "http://xncwb.cnncw.cn/index?time=20250917"
-  },
-  {
-    "name": "日照日报",
-    "url": "https://epaper.rznews.cn/shtml/rzrb/20250917/index.shtml"
-  },
-  {
-    "name": "濮阳日报",
-    "url": "http://m.pyrb.pyxww.com/202509/18/l01.html"
-  },
-  {
-    "name": "三峡日报",
-    "url": "https://epaper.cn3x.com.cn/sxrb/column/202509/18/colA1.html"
   }
 ]

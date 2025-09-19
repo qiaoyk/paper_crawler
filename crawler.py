@@ -256,6 +256,10 @@ def main():
         if re.search(r'\d{4}-\d{2}/\d{2}', url_template):
             date_pattern = re.search(r'(\d{4}-\d{2}/\d{2})', url_template)
             date_format_code = "%Y-%m/%d"
+         # 格式: YYYY-MM-DD
+        if re.search(r'\d{4}-\d{2}-\d{2}', url_template):
+            date_pattern = re.search(r'(\d{4}-\d{2}-\d{2})', url_template)
+            date_format_code = "%Y-%m/%d"
         # 格式: YYYYMM/DD
         elif re.search(r'\d{6}/\d{2}', url_template):
             date_pattern = re.search(r'(\d{6}/\d{2})', url_template)
