@@ -1,22 +1,14 @@
 [
   {
-    "name": "安庆晚报",
-    "url": "https://aqdzb.aqnews.com.cn/epaper/read.do?m=i&iid=12546&idate=2_2025-09-18"
+    "name": "lfrb",
+    "url": "http://epaper.lfcmw.com/rbpaper/pc/layout/202509/20/node_A01.html"
   },
   {
-    "name": "安康日报",
-    "url": "https://sjk.akxw.cn/epaper/read.do?m=i&iid=3739&idate=1_2025-09-18"
+    "name": "lfdsb",
+    "url": "http://epaper.lfcmw.com/dsbpaper/pc/layout/202509/19/node_A01.html"
   },
   {
-    "name": "阜阳日报",
-    "url": "https://test.fynews.net/epaper/read.do?m=i&iid=4261&idate=1_2025-09-18"
-  },
-  {
-    "name": "颍州晚报",
-    "url": "https://test.fynews.net/epaper/read.do?m=i&iid=4262&idate=2_2025-09-17"
-  },
-  {
-    "name": "井冈山报",
-    "url": "http://szb.jgsdaily.com:9999/epaper/jgsb/html/2025/09/18/01/default.htm"
+    "name": "周口晚报",
+    "url": "http://www.zhld.com/szb/wbpc/layout/202509/19/node_01.html"
   }
 ]
