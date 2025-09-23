@@ -54,5 +54,124 @@
       {
         "name": "重庆日报",
         "url": "https://epaper.cqrb.cn/cqrb/2025-09/23/001/node.htm"
+      },
+      {
+        "name": "南阳日报",
+        "url": "http://epaper.01ny.cn/http_rb/html/2025-09/23/node_5.htm"
+      },
+      {
+        "name": "许昌晨报",
+        "url": "https://epaper.ourxuchang.com/xccb/2025-09/23/node_1.html"
+      },{
+        "name": "许昌日报",
+        "url": "https://epaper.ourxuchang.com/epaper/2025-09/23/node_1.html"
+      },
+      {
+        "name": "郑州日报",
+        "url": "https://zzrb.zynews.cn/html/2025-09/23/node_3.htm"
+      },
+      {
+        "name": "三门峡日报",
+        "url": "https://szb.ismx.cn/smxrb/html/2025-09/23/node_17.htm"
+      },
+      {
+        "name": "辽宁日报",
+        "url": "https://epaper.lnd.com.cn/lnrbepaper/pc/layout/202509/23/node_01.html"
+      },
+      {
+        "name": "辽沈晚报",
+        "url": "https://epaper.lnd.com.cn/lswbepaper/pc/layout/202509/23/node_A01.html"
+      },
+      {
+        "name": "营口日报",
+        "url": "http://www.ykd.com.cn/pc/layout/202509/23/node_01.html"
+      },
+      {
+        "name": "沈阳日报",
+        "url": "https://epaper.syd.com.cn/syrb/html/2025-09/23/node_1.htm?v=1"
+      },
+      {
+        "name": "沈阳晚报",
+        "url": "https://epaper.syd.com.cn/sywb/html/2025-09/23/node_1.htm?v=1"
+      },
+      {
+        "name": "上饶日报",
+        "url": "http://paper.srxww.com/pc/column/202509/23/node_01.html"
+      },
+      {
+        "name": "九江日报",
+        "url": "https://jjrb.jjxw.cn/html/2025-09/23/node_1.htm?v=6"
+      },
+      {
+        "name": "赣南日报",
+        "url": "http://szb.newskj.com/html/2025-09/23/node_1.htm?v=1"
+      },
+      {
+        "name": "鹰潭日报",
+        "url": "http://ytpaper.ytnews.cn/html/2025-09/23/node_1.htm?v=1"
+      },
+      {
+        "name": "南昌日报",
+        "url": "http://www.ncrbw.cn/html/2025-09/23/node_1.htm?v=1"
+      },
+      {
+        "name": "宁夏日报",
+        "url": "https://szb.nxrb.cn/nxrb/pc/layout/202509/23/node_01.html"
+      },
+      {
+        "name": "华兴时报",
+        "url": "https://www.hxsbs.com/szb/layout/202509/23/node_01.html"
+      },
+      {
+        "name": "银川晚报",
+        "url": "https://szb.ycfbapp.com/ycwb/pc/layout/202509/23/node_01.html"
+      },
+      {
+        "name": "生活晚报",
+        "url": "https://shwb.bingtuannet.com/pc/layout/202509/23/node_01.html"
+      },
+      {
+        "name": "兵团晚报",
+        "url": "https://epaper.bingtuannet.com/pc/layout/202509/23/node_01.html"
+      },
+      {
+        "name": "西宁日报",
+        "url": "http://www.xnwbw.com/html/2025-09/23/node_2.htm"
+      },
+      {
+        "name": "柴达木日报",
+        "url": "https://www.cdmrb.com.cn/pc/layout/202509/23/node_1.html"
+      },
+      {
+        "name": "青海日报",
+        "url": "https://epaper.tibet3.com/qhrb/html/202509/23/node_1.html"
+      },
+      {
+        "name": "西海都市报",
+        "url": "https://epaper.tibet3.com/xhdsb/html/202509/23/node_A1.html"
+      },
+      {
+        "name": "民族时报",
+        "url": "https://mzsb.yunnan.cn/202509/23/node_01.html"
+      },
+      {
+        "name": "ynrb",
+        "url": "https://yndaily.yunnan.cn/202509/23/node_01.html"
+      },
+      {
+        "name": "玉林日报",
+        "url": "https://www.gxylnews.com/ylrb/PC/202509/23/node_A01.html"
+      },
+      {
+        "name": "海南日报",
+        "url": "http://news.hndaily.cn/html/2025-09/23/node_1.htm?v=1"
+      },
+      {
+        "name": "三亚晨报",
+        "url": "http://epaper.sanyarb.com.cn/html/2025-09/23/node_1.htm?v=1"
+      },
+      {
+        "name": "资阳日报",
+        "url": "http://paper.zyrb.com.cn/html/2025-09/23/node_1.htm?v=1"
       }
   ]
