@@ -9,6 +9,11 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from PyPDF2 import PdfMerger, PdfReader
 from PyPDF2.errors import PdfReadError
+import urllib3
+
+# 禁用SSL证书警告（针对有问题的网站）
+# 注意：在生产环境中应该谨慎使用，但对于爬虫来说是必要的
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def natural_sort_key(s):
     """
@@ -36,7 +41,7 @@ def crawl_pages(start_url):
         
         try:
             print(f"正在爬取页面: {current_url}")
-            response = requests.get(current_url, headers=headers, timeout=10)
+            response = requests.get(current_url, headers=headers, timeout=10, verify=False)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, "html.parser")
             
@@ -51,9 +56,16 @@ def crawl_pages(start_url):
                         to_visit.append(full_url)
         except requests.RequestException as e:
             if is_start_url and not crawled_urls:
-                print(f"起始页面 {start_url} 无法访问: {e}。跳过此日期。")
+                if "SSL" in str(e) or "certificate" in str(e).lower():
+                    print(f"起始页面 {start_url} SSL证书问题: {e}。已配置绕过SSL验证，如仍失败请检查网站。")
+                else:
+                    print(f"起始页面 {start_url} 无法访问: {e}。")
+                print("跳过此日期。")
                 return None
-            print(f"爬取 {current_url} 失败: {e}")
+            if "SSL" in str(e) or "certificate" in str(e).lower():
+                print(f"爬取 {current_url} SSL证书问题: {e}")
+            else:
+                print(f"爬取 {current_url} 失败: {e}")
             
     return crawled_urls
 
@@ -65,7 +77,7 @@ def download_and_validate_pdf(url_info, output_dir, headers):
     index, pdf_url = url_info
     try:
         print(f"线程启动: 开始下载 {pdf_url}")
-        response = requests.get(pdf_url, headers=headers, timeout=60) # 加长超时
+        response = requests.get(pdf_url, headers=headers, timeout=60, verify=False) # 加长超时
         response.raise_for_status()
         
         if not response.content:
@@ -98,7 +110,10 @@ def download_and_validate_pdf(url_info, output_dir, headers):
             return None
 
     except requests.RequestException as e:
-        print(f"下载 {pdf_url} 失败: {e}")
+        if "SSL" in str(e) or "certificate" in str(e).lower():
+            print(f"下载 {pdf_url} SSL证书问题: {e}")
+        else:
+            print(f"下载 {pdf_url} 失败: {e}")
         return None
     except Exception as e:
         print(f"处理 {pdf_url} 时发生了未知错误: {e}")
@@ -126,7 +141,7 @@ def download_and_merge_pdfs(seed_url, output_dir="downloaded_pdfs", merged_filen
     }
     for page_url in pages:
         try:
-            response = requests.get(page_url, headers=headers, timeout=10)
+            response = requests.get(page_url, headers=headers, timeout=10, verify=False)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, "html.parser")
 
@@ -137,7 +152,10 @@ def download_and_merge_pdfs(seed_url, output_dir="downloaded_pdfs", merged_filen
                     if full_pdf_url not in pdf_urls: # 检查重复并保持顺序
                         pdf_urls.append(full_pdf_url)
         except requests.RequestException as e:
-            print(f"获取页面 {page_url} 出错了: {e}")
+            if "SSL" in str(e) or "certificate" in str(e).lower():
+                print(f"获取页面 {page_url} SSL证书问题: {e}")
+            else:
+                print(f"获取页面 {page_url} 出错了: {e}")
             continue
     
     if not pdf_urls:
@@ -234,13 +252,25 @@ def main():
         print(f"'{websites_file}' 文件为空。")
         return
 
-    page_limit = 50
+    page_limit = 2
 
     try:
-        start_date_str = input("输入开始日期 (YYYY-MM-DD): ").strip()
-        end_date_str = input("输入结束日期 (YYYY-MM-DD): ").strip()
+        # 设置默认日期范围
+        default_start_date = "2025-09-01"
+        default_end_date = "2025-09-10"
+        
+        start_date_str = input(f"输入开始日期 (YYYY-MM-DD) [默认: {default_start_date}]: ").strip()
+        if not start_date_str:
+            start_date_str = default_start_date
+            
+        end_date_str = input(f"输入结束日期 (YYYY-MM-DD) [默认: {default_end_date}]: ").strip()
+        if not end_date_str:
+            end_date_str = default_end_date
+            
         start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
         end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+        
+        print(f"使用日期范围: {start_date_str} 到 {end_date_str}")
     except ValueError:
         print("日期格式不正确，请使用 YYYY-MM-DD 格式。")
         return
@@ -250,16 +280,24 @@ def main():
         url_template = site['url']
         site_name_template = site['name'].replace(" ", "_").replace(".", "_")
 
+
         date_format_code = None
         date_pattern = None
+        # 格式: YYYYMMDD/YYYYMMDD (重复日期格式，如: 20250920/20250920)
+        if re.search(r'\d{8}/\d{8}', url_template):
+            # 验证两个日期是否相同
+            match = re.search(r'(\d{8})/(\d{8})', url_template)
+            if match and match.group(1) == match.group(2):
+                date_pattern = re.search(r'(\d{8}/\d{8})', url_template)
+                date_format_code = "%Y%m%d/%Y%m%d"  # 重复相同的日期格式
         # 格式: YYYY-MM/DD
-        if re.search(r'\d{4}-\d{2}/\d{2}', url_template):
+        elif re.search(r'\d{4}-\d{2}/\d{2}', url_template):
             date_pattern = re.search(r'(\d{4}-\d{2}/\d{2})', url_template)
             date_format_code = "%Y-%m/%d"
          # 格式: YYYY-MM-DD
-        if re.search(r'\d{4}-\d{2}-\d{2}', url_template):
+        elif re.search(r'\d{4}-\d{2}-\d{2}', url_template):
             date_pattern = re.search(r'(\d{4}-\d{2}-\d{2})', url_template)
-            date_format_code = "%Y-%m/%d"
+            date_format_code = "%Y-%m-%d"
         # 格式: YYYYMM/DD
         elif re.search(r'\d{6}/\d{2}', url_template):
             date_pattern = re.search(r'(\d{6}/\d{2})', url_template)
