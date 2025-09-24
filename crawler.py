@@ -2,6 +2,7 @@ import os
 import re
 import json
 import sys
+import time
 import requests
 import concurrent.futures
 from datetime import datetime, timedelta
@@ -12,7 +13,6 @@ from PyPDF2.errors import PdfReadError
 import urllib3
 
 # 禁用SSL证书警告（针对有问题的网站）
-# 注意：在生产环境中应该谨慎使用，但对于爬虫来说是必要的
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def natural_sort_key(s):
@@ -47,6 +47,8 @@ def crawl_pages(start_url):
             
             visited.add(current_url)
             crawled_urls.append(current_url)
+            
+            time.sleep(1)
 
             for link in soup.find_all("a", href=True):
                 href = link["href"].strip()
@@ -70,59 +72,116 @@ def crawl_pages(start_url):
     return crawled_urls
 
 def download_and_validate_pdf(url_info, output_dir, headers):
-    """
-    下载并验证单个PDF文件。此函数由线程池调用。
-    url_info 是一个元组 (index, url)，用于保证排序。
-    """
     index, pdf_url = url_info
-    try:
-        print(f"线程启动: 开始下载 {pdf_url}")
-        response = requests.get(pdf_url, headers=headers, timeout=60, verify=False) # 加长超时
-        response.raise_for_status()
-        
-        if not response.content:
-            print(f"警告: 下载的文件是空的 {pdf_url}")
-            return None
-
-        file_name = os.path.basename(urlparse(pdf_url).path)
-        safe_filename = re.sub(r'[\\/*?:"<>|]', "_", file_name)
-        if not safe_filename.lower().endswith('.pdf'):
-            safe_filename += ".pdf"
-        
-        file_path = os.path.join(output_dir, safe_filename)
-        
-        with open(file_path, "wb") as f:
-            f.write(response.content)
-
+    max_retries = 3
+    retry_delay = 2
+    
+    for attempt in range(max_retries):
         try:
-            with open(file_path, 'rb') as pdf_file:
-                reader = PdfReader(pdf_file, strict=False)
-                num_pages = len(reader.pages)
-                if num_pages == 0:
-                    print(f"警告: PDF文件 '{file_path}' 没有页面，跳过。")
+            print(f"线程启动: 开始下载 {pdf_url} (尝试 {attempt + 1}/{max_retries})")
+            
+            session = requests.Session()
+            session.headers.update(headers)
+            
+            response = session.get(
+                pdf_url, 
+                timeout=120,
+                verify=False,
+                stream=True,
+                allow_redirects=True
+            )
+            response.raise_for_status()
+            
+            file_name = os.path.basename(urlparse(pdf_url).path)
+            safe_filename = re.sub(r'[\\/*?:"<>|]', "_", file_name)
+            if not safe_filename.lower().endswith('.pdf'):
+                safe_filename += ".pdf"
+            
+            file_path = os.path.join(output_dir, safe_filename)
+            
+            with open(file_path, "wb") as f:
+                downloaded_bytes = 0
+                total_size = int(response.headers.get('content-length', 0))
+                
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+                        downloaded_bytes += len(chunk)
+                        
+                        if total_size > 1024 * 1024:  # 1MB以上才显示进度
+                            progress = downloaded_bytes / total_size * 100 if total_size > 0 else 0
+                            print(f"\r   下载进度: {progress:.1f}% ({downloaded_bytes}/{total_size} 字节)", end="")
+                
+                if total_size > 1024 * 1024:
+                    print()
+                        
+            # 检查文件是否下载完成
+            if downloaded_bytes == 0:
+                print(f"警告: 下载的文件是空的 {pdf_url}")
+                if os.path.exists(file_path):
                     os.remove(file_path)
+                if attempt == max_retries - 1:
                     return None
-            print(f"线程完成: 下载并验证成功 {file_path} (共 {num_pages} 页)")
-            return (index, file_path, num_pages)
-        except PdfReadError as e:
-            print(f"错误: 文件 '{file_path}' 不是有效的PDF。错误: {e}")
-            os.remove(file_path)
-            return None
+                continue
 
-    except requests.RequestException as e:
-        if "SSL" in str(e) or "certificate" in str(e).lower():
-            print(f"下载 {pdf_url} SSL证书问题: {e}")
-        else:
-            print(f"下载 {pdf_url} 失败: {e}")
-        return None
-    except Exception as e:
-        print(f"处理 {pdf_url} 时发生了未知错误: {e}")
-        return None
+            try:
+                with open(file_path, 'rb') as pdf_file:
+                    reader = PdfReader(pdf_file, strict=False)
+                    num_pages = len(reader.pages)
+                    if num_pages == 0:
+                        print(f"警告: PDF文件 '{file_path}' 没有页面，跳过")
+                        os.remove(file_path)
+                        if attempt == max_retries - 1:
+                            return None
+                        continue
+                print(f"线程完成: 下载并验证成功 {file_path} (共 {num_pages} 页，大小 {downloaded_bytes} 字节)")
+                return (index, file_path, num_pages)
+            except PdfReadError as e:
+                print(f"错误: 文件 '{file_path}' 不是有效的PDF。错误: {e}")
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                if attempt == max_retries - 1:
+                    return None
+                print(f"将在 {retry_delay} 秒后重试...")
+                time.sleep(retry_delay)
+                continue
+
+        except requests.exceptions.ConnectionError as e:
+            if "IncompleteRead" in str(e) or "Connection broken" in str(e):
+                print(f"下载 {pdf_url} 连接中断: {e}")
+            else:
+                print(f"下载 {pdf_url} 连接错误: {e}")
+            if attempt < max_retries - 1:
+                print(f"将在 {retry_delay} 秒后重试...")
+                time.sleep(retry_delay)
+                continue
+            else:
+                return None
+                
+        except requests.RequestException as e:
+            if "SSL" in str(e) or "certificate" in str(e).lower():
+                print(f"下载 {pdf_url} SSL证书问题: {e}")
+            else:
+                print(f"下载 {pdf_url} 请求失败: {e}")
+            if attempt < max_retries - 1:
+                print(f"将在 {retry_delay} 秒后重试...")
+                time.sleep(retry_delay)
+                continue
+            else:
+                return None
+                
+        except Exception as e:
+            print(f"处理 {pdf_url} 时发生了未知错误: {e}")
+            if attempt < max_retries - 1:
+                print(f"将在 {retry_delay} 秒后重试...")
+                time.sleep(retry_delay)
+                continue
+            else:
+                return None
+    
+    return None
 
 def download_and_merge_pdfs(seed_url, output_dir="downloaded_pdfs", merged_filename="merged.pdf"):
-    """
-    下载所有找到的PDF，然后将它们合并。
-    """
     if not seed_url:
         print("错误: 未提供起始URL。")
         return 0
@@ -134,7 +193,7 @@ def download_and_merge_pdfs(seed_url, output_dir="downloaded_pdfs", merged_filen
         print("未能爬取到任何页面。")
         return 0
 
-    pdf_urls = [] # 使用列表以保证顺序
+    pdf_urls = []
     print("\n开始在爬到的页面里找PDF链接...")
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -149,7 +208,7 @@ def download_and_merge_pdfs(seed_url, output_dir="downloaded_pdfs", merged_filen
                 href = link["href"].strip()
                 if ".pdf" in href.lower():
                     full_pdf_url = urljoin(page_url, href)
-                    if full_pdf_url not in pdf_urls: # 检查重复并保持顺序
+                    if full_pdf_url not in pdf_urls:
                         pdf_urls.append(full_pdf_url)
         except requests.RequestException as e:
             if "SSL" in str(e) or "certificate" in str(e).lower():
@@ -168,7 +227,7 @@ def download_and_merge_pdfs(seed_url, output_dir="downloaded_pdfs", merged_filen
         os.makedirs(output_dir)
 
     temp_pdf_files_with_index = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
         url_with_indices = list(enumerate(pdf_urls))
         
         future_results = executor.map(download_and_validate_pdf, url_with_indices, [output_dir]*len(url_with_indices), [headers]*len(url_with_indices))
@@ -200,7 +259,6 @@ def download_and_merge_pdfs(seed_url, output_dir="downloaded_pdfs", merged_filen
         merger.write(merged_file_path)
         merger.close()
 
-        # 检查合并后的文件是不是个废物
         if os.path.exists(merged_file_path) and os.path.getsize(merged_file_path) > 0:
             print(f"\n合并成功！最终文件: {merged_file_path}")
             success = True
@@ -224,9 +282,6 @@ def download_and_merge_pdfs(seed_url, output_dir="downloaded_pdfs", merged_filen
     return pages_this_run if success else 0
 
 def main():
-    """
-    主函数，程序入口。
-    """
     websites_file = "websites.json"
     
     if len(sys.argv) > 1:
@@ -252,12 +307,11 @@ def main():
         print(f"'{websites_file}' 文件为空。")
         return
 
-    page_limit = 2
+    page_limit = 50
 
     try:
-        # 设置默认日期范围
         default_start_date = "2025-09-01"
-        default_end_date = "2025-09-10"
+        default_end_date = "2025-09-20"
         
         start_date_str = input(f"输入开始日期 (YYYY-MM-DD) [默认: {default_start_date}]: ").strip()
         if not start_date_str:
@@ -276,20 +330,18 @@ def main():
         return
 
     for site in websites:
-        pages_for_this_site = 0 # 每个网站单独计算页数
+        pages_for_this_site = 0
         url_template = site['url']
         site_name_template = site['name'].replace(" ", "_").replace(".", "_")
 
 
         date_format_code = None
         date_pattern = None
-        # 格式: YYYYMMDD/YYYYMMDD (重复日期格式，如: 20250920/20250920)
         if re.search(r'\d{8}/\d{8}', url_template):
-            # 验证两个日期是否相同
             match = re.search(r'(\d{8})/(\d{8})', url_template)
             if match and match.group(1) == match.group(2):
                 date_pattern = re.search(r'(\d{8}/\d{8})', url_template)
-                date_format_code = "%Y%m%d/%Y%m%d"  # 重复相同的日期格式
+                date_format_code = "%Y%m%d/%Y%m%d"
         # 格式: YYYY-MM/DD
         elif re.search(r'\d{4}-\d{2}/\d{2}', url_template):
             date_pattern = re.search(r'(\d{4}-\d{2}/\d{2})', url_template)
