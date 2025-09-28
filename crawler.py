@@ -4,6 +4,7 @@ import json
 import sys
 import time
 import requests
+import argparse
 import concurrent.futures
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
@@ -281,17 +282,59 @@ def download_and_merge_pdfs(seed_url, output_dir="downloaded_pdfs", merged_filen
     
     return pages_this_run if success else 0
 
+def select_websites(websites, source_spec):
+    """
+    根据指定的数据源选择网站列表
+    source_spec 可以是:
+    - "all": 所有网站
+    - 数字: 按索引选择 (从1开始)
+    - 字符串: 按名称模糊匹配
+    """
+    if source_spec.lower() == "all":
+        return websites
+    
+    # 尝试按索引选择
+    if source_spec.isdigit():
+        index = int(source_spec) - 1  # 用户输入从1开始，内部从0开始
+        if 0 <= index < len(websites):
+            return [websites[index]]
+        else:
+            print(f"错误: 索引 {source_spec} 超出范围 (1-{len(websites)})")
+            return []
+    
+    # 按名称模糊匹配
+    matched_sites = []
+    for site in websites:
+        if source_spec.lower() in site['name'].lower():
+            matched_sites.append(site)
+    
+    if not matched_sites:
+        print(f"错误: 未找到匹配 '{source_spec}' 的数据源")
+        print("可用的数据源:")
+        for i, site in enumerate(websites, 1):
+            print(f"  {i:2d}. {site['name']}")
+        return []
+    
+    if len(matched_sites) > 1:
+        print(f"找到多个匹配 '{source_spec}' 的数据源:")
+        for i, site in enumerate(matched_sites, 1):
+            print(f"  {i}. {site['name']}")
+        return matched_sites
+    
+    return matched_sites
+
 def main():
+    parser = argparse.ArgumentParser(description="报纸爬取工具 - 让我们把这些该死的PDF都下载下来！")
+    parser.add_argument("url", nargs="?", help="直接指定要爬取的URL (向后兼容模式)")
+    parser.add_argument("-s", "--source", help="指定数据源: 'all' (全部), 数字 (索引), 或名称关键字 (模糊匹配)")
+    parser.add_argument("--list", action="store_true", help="列出所有可用的数据源")
+    parser.add_argument("-p", "--page_limit", help="指定每个数据源要爬取的页数", default=50)
+    
+    args = parser.parse_args()
+    
     websites_file = "websites.json"
     
-    if len(sys.argv) > 1:
-        seed_url = sys.argv[1]
-        site_name = re.sub(r'https?://', '', seed_url).split('/')[0].replace(".", "_")
-        merged_filename = f"{site_name}_merged.pdf"
-        print(f"\n从命令行接收到任务: {seed_url}")
-        download_and_merge_pdfs(seed_url, merged_filename=merged_filename)
-        return
-
+    # 读取网站配置文件
     if not os.path.exists(websites_file):
         print(f"错误: 未找到 '{websites_file}'。")
         return
@@ -306,8 +349,37 @@ def main():
     if not websites:
         print(f"'{websites_file}' 文件为空。")
         return
+    
+    # 处理 --list 参数
+    if args.list:
+        print("可用的数据源:")
+        for i, site in enumerate(websites, 1):
+            print(f"  {i:2d}. {site['name']}")
+        return
+    
+    # 向后兼容：直接传URL的情况
+    if args.url and not args.source:
+        seed_url = args.url
+        site_name = re.sub(r'https?://', '', seed_url).split('/')[0].replace(".", "_")
+        merged_filename = f"{site_name}_merged.pdf"
+        print(f"\n从命令行接收到任务: {seed_url}")
+        download_and_merge_pdfs(seed_url, merged_filename=merged_filename)
+        return
+    
+    # 选择要处理的网站
+    if args.source:
+        selected_websites = select_websites(websites, args.source)
+        if not selected_websites:
+            return
+    else:
+        # 如果没有指定source，默认处理全部
+        selected_websites = websites
+        
+    print(f"准备处理 {len(selected_websites)} 个数据源:")
+    for site in selected_websites:
+        print(f"  - {site['name']}")
 
-    page_limit = 50
+    page_limit = args.page_limit
 
     try:
         default_start_date = "2025-09-01"
@@ -329,7 +401,7 @@ def main():
         print("日期格式不正确，请使用 YYYY-MM-DD 格式。")
         return
 
-    for site in websites:
+    for site in selected_websites:
         pages_for_this_site = 0
         url_template = site['url']
         site_name_template = site['name'].replace(" ", "_").replace(".", "_")
