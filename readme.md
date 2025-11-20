@@ -18,3 +18,7 @@ python3 crawler.py               # 不指定source默认处理全部
 
 # 5. 向后兼容：直接传URL (保持原有功能)
 python3 crawler.py http://example.com/newspaper/
+
+# 6. 页数统计：
+python3 count_pages.py (默认目录`downloaded_pdfs`)
+python3 count_pages.py some_other_folder

@@ -316,7 +316,7 @@ def select_websites(websites, source_spec):
         return []
     
     if len(matched_sites) > 1:
-        print(f"找到多个匹配 '{source_spec}' 的数据源:")
+        print(f"找到多个匹配 '{source_spec}' 的数据源:")@
         for i, site in enumerate(matched_sites, 1):
             print(f"  {i}. {site['name']}")
         return matched_sites
